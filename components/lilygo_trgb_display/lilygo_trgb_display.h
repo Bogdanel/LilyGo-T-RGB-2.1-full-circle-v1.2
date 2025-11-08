@@ -1,4 +1,5 @@
 #pragma once
+
 #include "esphome/core/component.h"
 #include "esphome/components/display/display_buffer.h"
 
@@ -8,13 +9,14 @@ namespace lilygo_trgb_display {
 class LilyGoTRGBDisplay : public display::DisplayBuffer, public Component {
  public:
   void setup() override;
-  void loop() override { this->update(); }
   void update() override;
-  void draw_absolute_pixel_internal(int x, int y, Color color) override;
-  void flush_();
+  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
+  int get_width() override { return 480; }
+  int get_height() override { return 480; }
 
  protected:
-  void do_update_() override {}
+  void draw_absolute_pixel_internal(int x, int y, Color color) override;
+  void flush_() override;
 };
 
 }  // namespace lilygo_trgb_display
