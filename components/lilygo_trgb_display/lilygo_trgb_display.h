@@ -10,14 +10,15 @@ class LilyGoTRGBDisplay : public display::DisplayBuffer {
   void setup() override;
   void update() override;
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
-  void flush_();  // removed override keyword
+  void flush_();  // no override keyword
 
   display::DisplayType get_display_type() override {
     return display::DisplayType::DISPLAY_TYPE_COLOR;
   }
 
-  int get_width() override { return 480; }
-  int get_height() override { return 480; }
+ protected:
+  int get_width_internal() override { return 480; }
+  int get_height_internal() override { return 480; }
 };
 
 }  // namespace lilygo_trgb_display
