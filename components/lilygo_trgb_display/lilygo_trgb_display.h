@@ -6,7 +6,7 @@
 namespace esphome {
 namespace lilygo_trgb_display {
 
-class LilyGoTRGBDisplay : public display::DisplayBuffer, public Component {
+class LilyGoTRGBDisplay : public display::DisplayBuffer {
  public:
   void setup() override;
   void update() override;
@@ -16,7 +16,7 @@ class LilyGoTRGBDisplay : public display::DisplayBuffer, public Component {
 
  protected:
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
-  void flush_() override;
+  void flush_();
 };
 
 }  // namespace lilygo_trgb_display
