@@ -3,9 +3,11 @@ import esphome.config_validation as cv
 from esphome.components import display
 from esphome.const import CONF_ID
 
+CODEOWNERS = ["@Bogdanel"]
+
 lilygo_trgb_display_ns = cg.esphome_ns.namespace("lilygo_trgb_display")
 LilyGoTRGBDisplay = lilygo_trgb_display_ns.class_(
-    "LilyGoTRGBDisplay", cg.PollingComponent, display.DisplayBuffer
+    "LilyGoTRGBDisplay", display.DisplayBuffer
 )
 
 CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(
@@ -13,6 +15,7 @@ CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(
         cv.GenerateID(): cv.declare_id(LilyGoTRGBDisplay),
     }
 ).extend(cv.polling_component_schema("1s"))
+
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])

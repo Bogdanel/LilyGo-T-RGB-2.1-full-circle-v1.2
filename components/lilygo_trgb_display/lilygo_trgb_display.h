@@ -1,11 +1,12 @@
 #pragma once
+
 #include "esphome/core/component.h"
 #include "esphome/components/display/display_buffer.h"
 
 namespace esphome {
 namespace lilygo_trgb_display {
 
-class LilyGoTRGBDisplay : public PollingComponent, public display::DisplayBuffer {
+class LilyGoTRGBDisplay : public display::DisplayBuffer {
  public:
   void setup() override;
   void update() override;
@@ -15,7 +16,7 @@ class LilyGoTRGBDisplay : public PollingComponent, public display::DisplayBuffer
 
  protected:
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
-  void flush_();  // Push buffer to display
+  void flush_() override;  // Push buffer to display
 };
 
 }  // namespace lilygo_trgb_display
