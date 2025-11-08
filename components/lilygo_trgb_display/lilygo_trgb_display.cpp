@@ -1,12 +1,8 @@
 #include "lilygo_trgb_display.h"
 #include "esphome/core/log.h"
 #include "Arduino.h"
-#include "esp_lcd_panel_vendor.h"
-#include "esp_lcd_panel_ops.h"
-#include "esp_lcd_panel_rgb.h"
 
-static const char *TAG = "lilygo_trgb";
-
+static const char *TAG = "lilygo_trgb_display";
 namespace esphome {
 namespace lilygo_trgb_display {
 
