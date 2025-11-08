@@ -22,8 +22,6 @@
 #include <SD_MMC.h>
 
 #include <ExtensionIOXL9555.hpp>
-#include <TouchDrvGT911.hpp>
-#include <TouchDrvFT6X36.hpp>
 #include <TouchDrvCSTXXX.hpp>
 
 #include "LilyGo_Display.h"
@@ -31,22 +29,13 @@
 
 enum LilyGo_RGBPanel_Type {
     LILYGO_T_RGB_UNKNOWN,
-    // https://www.lilygo.cc/products/t-rgb?variant=42407295877301
-    LILYGO_T_RGB_2_1_INCHES_HALF_CIRCLE,
     // https://www.lilygo.cc/products/t-rgb
-    LILYGO_T_RGB_2_1_INCHES_FULL_CIRCLE,
-    // https://www.lilygo.cc/products/t-rgb?variant=42880799441077
-    LILYGO_T_RGB_2_8_INCHES,
-
-    LILYGO_T_RGB_2_1_INCHES_HALF_CIRCLE_V2,
-    LILYGO_T_RGB_2_1_INCHES_FULL_CIRCLE_V2,
+    LILYGO_T_RGB_2_1_INCHES_FULL_CIRCLE
 };
 
 enum LilyGo_RGBPanel_TouchType {
     LILYGO_T_RGB_TOUCH_UNKNOWN,
-    LILYGO_T_RGB_TOUCH_FT3267,
     LILYGO_T_RGB_TOUCH_CST820,
-    LILYGO_T_RGB_TOUCH_GT911,
 };
 
 enum LilyGo_RGBPanel_Color_Order {

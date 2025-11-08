@@ -72,38 +72,7 @@ void LilyGo_RGBPanel::initDevice()
 
     LilyGo_RGBPanel_TouchType touchType = initTouch();
 
-    switch (_panel_type) {
-    case LILYGO_T_RGB_2_1_INCHES_HALF_CIRCLE:
-    case LILYGO_T_RGB_2_1_INCHES_FULL_CIRCLE:
-        _init_cmd = st7701_2_1_inches;
-        break;
-    case LILYGO_T_RGB_2_1_INCHES_HALF_CIRCLE_V2:
-    case LILYGO_T_RGB_2_1_INCHES_FULL_CIRCLE_V2:
-        _init_cmd = st7701_2_1_inches_rev2;
-        break;
-    case LILYGO_T_RGB_2_8_INCHES:
-        _init_cmd = st7701_2_8_inches;
-        break;
-    default: {
-        switch (touchType) {
-        case LILYGO_T_RGB_2_1_INCHES_HALF_CIRCLE:
-        case LILYGO_T_RGB_2_1_INCHES_FULL_CIRCLE:
-            _init_cmd = st7701_2_1_inches;
-            break;
-        case LILYGO_T_RGB_2_8_INCHES:
-            _init_cmd = st7701_2_8_inches;
-            break;
-        default:
-            break;
-        }
-    }
-    break;
-    }
-
-    if (touchType == LILYGO_T_RGB_TOUCH_UNKNOWN) {
-        SensorWireHelper::dumpDevices(Wire);
-        log_d("Unable to detect touch type, please use  begin(LilyGo_RGBPanel_Type type, LilyGo_RGBPanel_Color_Order order) to specify the initialization screen type");
-    }
+    _init_cmd = st7701_2_1_inches;
 
     initBUS();
 
@@ -215,18 +184,8 @@ LilyGo_RGBPanel_Type LilyGo_RGBPanel::getModel()
 {
     if (_touchDrv) {
         const char *model = _touchDrv->getModelName();
-        if (model == NULL)return LILYGO_T_RGB_UNKNOWN;
-        if (strlen(model) == 0)return LILYGO_T_RGB_UNKNOWN;
-        if (strcmp(model, "FT3267") == 0) {
-            _touchType = LILYGO_T_RGB_TOUCH_FT3267;
-            return LILYGO_T_RGB_2_1_INCHES_HALF_CIRCLE;
-        } else if (strcmp(model, "CST820") == 0) {
-            _touchType = LILYGO_T_RGB_TOUCH_CST820;
-            return LILYGO_T_RGB_2_1_INCHES_FULL_CIRCLE;
-        } else if (strcmp(model, "GT911") == 0) {
-            _touchType = LILYGO_T_RGB_TOUCH_GT911;
-            return LILYGO_T_RGB_2_8_INCHES;
-        }
+        _touchType = LILYGO_T_RGB_TOUCH_CST820;
+        return LILYGO_T_RGB_2_1_INCHES_FULL_CIRCLE;
     }
     return LILYGO_T_RGB_UNKNOWN;
 }
@@ -267,10 +226,6 @@ void LilyGo_RGBPanel::sleep()
 
     if (LILYGO_T_RGB_WAKEUP_FORM_TOUCH != _wakeupMethod) {
         if (_touchDrv) {
-            if (getModel() == LILYGO_T_RGB_2_8_INCHES) {
-                pinMode(BOARD_TOUCH_IRQ, OUTPUT);
-                digitalWrite(BOARD_TOUCH_IRQ, LOW); //Before touch to set sleep, it is necessary to set INT to LOW
-            }
             _touchDrv->sleep();
         }
     }
@@ -346,14 +301,6 @@ uint16_t  LilyGo_RGBPanel::height()
 uint8_t LilyGo_RGBPanel::getPoint(int16_t *x_array, int16_t *y_array, uint8_t get_point)
 {
     if (_touchDrv) {
-
-        // The FT3267 type touch reading INT level is to read the coordinates after pressing
-        // The CST820 interrupt level is not continuous, so the register must be read all the time to obtain continuous coordinates.
-        if (_touchType == LILYGO_T_RGB_TOUCH_FT3267) {
-            if (!_touchDrv->isPressed()) {
-                return 0;
-            }
-        }
         uint8_t touched =  _touchDrv->getPoint(x_array, y_array, get_point);
         return touched;
     }
@@ -564,25 +511,6 @@ void LilyGo_RGBPanel::initBUS()
         },
     };
 
-    switch (_panel_type) {
-    case LILYGO_T_RGB_2_1_INCHES_HALF_CIRCLE_V2:
-    case LILYGO_T_RGB_2_1_INCHES_FULL_CIRCLE_V2:
-        panel_config.timings.pclk_hz = 10000000UL;
-        panel_config.timings.h_res = BOARD_TFT_WIDTH;
-        panel_config.timings.v_res = BOARD_TFT_HEIGHT;
-        panel_config.timings.hsync_pulse_width = 2;
-        panel_config.timings.hsync_back_porch = 34;
-        panel_config.timings.hsync_front_porch = 20;
-        panel_config.timings.vsync_pulse_width = 2;
-        panel_config.timings.vsync_back_porch = 20;
-        panel_config.timings.vsync_front_porch = 50;
-        memcpy(panel_config.data_gpio_nums, bus_rbg_panel_v2,
-               sizeof(panel_config.data_gpio_nums));
-        break;
-    default:
-        break;
-    }
-
     if (_order == LILYGO_T_RGB_ORDER_BGR) {
 
         // Swap color order
@@ -612,63 +540,10 @@ LilyGo_RGBPanel_TouchType LilyGo_RGBPanel::initTouch()
     _touchDrv->setPins(touch_reset_pin, touch_irq_pin);
     result = _touchDrv->begin(Wire, CST816_SLAVE_ADDRESS, BOARD_I2C_SDA, BOARD_I2C_SCL);
     if (result) {
-
-
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
         const char *model = _touchDrv->getModelName();
         log_i("Successfully initialized %s, using %s Driver!\n", model, model);
-#endif
-        // _init_cmd = st7701_2_1_inches;
-        // return true;
         return LILYGO_T_RGB_TOUCH_CST820;
     }
-    delete _touchDrv;
-
-    _touchDrv = new TouchDrvGT911();
-    _touchDrv->setGpioCallback(TouchDrvPinMode, TouchDrvDigitalWrite, TouchDrvDigitalRead);
-    _touchDrv->setPins(touch_reset_pin, touch_irq_pin);
-    result = _touchDrv->begin(Wire, GT911_SLAVE_ADDRESS_L, BOARD_I2C_SDA, BOARD_I2C_SCL);
-    if (result) {
-        TouchDrvGT911 *tmp = static_cast<TouchDrvGT911 *>(_touchDrv);
-        // Do not modify the touch interrupt mode, as this may cause touch failure
-        // tmp->setInterruptMode(FALLING);
-
-        log_i("Successfully initialized GT911, using GT911 Driver!");
-        // _init_cmd = st7701_2_8_inches;
-        // return true;
-        return LILYGO_T_RGB_TOUCH_GT911;
-    }
-    delete _touchDrv;
-
-    _touchDrv = new TouchDrvFT6X36();
-    _touchDrv->setGpioCallback(TouchDrvPinMode, TouchDrvDigitalWrite, TouchDrvDigitalRead);
-    _touchDrv->setPins(touch_reset_pin, touch_irq_pin);
-    result = _touchDrv->begin(Wire, FT3267_SLAVE_ADDRESS, BOARD_I2C_SDA, BOARD_I2C_SCL);
-    if (result) {
-
-
-        TouchDrvFT6X36 *tmp = static_cast<TouchDrvFT6X36 *>(_touchDrv);
-        tmp->interruptTrigger();
-
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-        const char *model = _touchDrv->getModelName();
-        log_i("Successfully initialized %s, using %s Driver!\n", model, model);
-#endif
-
-        // _init_cmd = st7701_2_1_inches;
-        // return true;
-        return LILYGO_T_RGB_TOUCH_FT3267;
-    }
-    delete _touchDrv;
-
-    log_e("Unable to find touch device.");
-
-    _touchDrv = NULL;
-
-    // If touch does not exist, add a default initialization sequence
-    // _init_cmd = st7701_2_1_inches;
-    // return false;
-    return LILYGO_T_RGB_TOUCH_UNKNOWN;
 }
 
 void LilyGo_RGBPanel::writeCommand(const uint8_t cmd)
