@@ -1,7 +1,8 @@
 #include "lilygo_trgb_display.h"
 #include "esphome/core/log.h"
 #include "Arduino.h"
-#include <LilyGo_RGBPanel.h>
+#include "src/LilyGo_RGBPanel.h"
+
 
 
 static const char *TAG = "lilygo_trgb_display";
