@@ -34,18 +34,24 @@ void LilyGoTRGBDisplay::setup() {
   ESP_LOGI(TAG, "Panel initialized successfully (%dx%d)", w, h);
   ESP_LOGI(TAG, "Free PSRAM: %d bytes", heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
 
-  // Quick color test
-  uint16_t test_colors[] = {0xF800, 0x07E0, 0x001F, 0xFFFF};
   ESP_LOGI(TAG, "Running panel color test...");
-  for (uint8_t i = 0; i < 4; i++) {
-    ESP_LOGI(TAG, "Displaying test color %d", i);
-    panel_.pushColors(0, 0, w, h, &test_colors[i]);
-    delay(500);
+  uint16_t *buf565 = reinterpret_cast<uint16_t *>(this->buffer_);
+
+  const uint16_t colors[] = {
+    display::ColorUtil::color_to_565(Color(255, 0, 0)),   // Red
+    display::ColorUtil::color_to_565(Color(0, 255, 0)),   // Green
+    display::ColorUtil::color_to_565(Color(0, 0, 255)),   // Blue
+    display::ColorUtil::color_to_565(Color(255, 255, 255)) // White
+  };
+
+  for (auto c : colors) {
+    for (int i = 0; i < w * h; i++) buf565[i] = c;
+    esp_lcd_panel_draw_bitmap(panel_.get_panel(), 0, 0, w, h, buf565);
+    delay(100);
   }
 
   ESP_LOGI(TAG, "Color test complete. Clearing screen...");
-  uint16_t black = 0x0000;
-  panel_.pushColors(0, 0, w, h, &black);
+  this->fill(Color(0, 0, 0));
 }
 
 void LilyGoTRGBDisplay::fill(Color color) {
